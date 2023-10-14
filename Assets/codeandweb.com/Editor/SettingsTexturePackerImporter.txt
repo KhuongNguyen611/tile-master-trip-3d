@@ -1,8 +1,0 @@
-version: 2
-tpsheetFileNames:
-- Assets/Resources/Flowers.tpsheet
-textureFileNames:
-- Assets/Resources/Flowers.png
-normalmapFileNames:
-- 
-enableDebugOutput: 0
