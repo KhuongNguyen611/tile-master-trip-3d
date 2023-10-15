@@ -27,6 +27,9 @@ public class GameManager : StaticInstance<GameManager>
             case GameState.Tutorial:
                 HandleTutorial();
                 break;
+            case GameState.PrepareLevel:
+                HandlePrepareLevel();
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
@@ -42,7 +45,7 @@ public class GameManager : StaticInstance<GameManager>
         bool IsCompleteTutorial = !playerProgress.currentLevel.Equals(0);
         if (IsCompleteTutorial)
         {
-            ViewManager.Instance.Show<HomeScreenView>();
+            ViewManager.Instance.Show<HomeScreen>();
         }
         else
         {
@@ -53,6 +56,13 @@ public class GameManager : StaticInstance<GameManager>
     private void HandleTutorial()
     {
         _tutorialControl.gameObject.SetActive(true);
+
+        ChangeState(GameState.PrepareLevel);
+    }
+
+    private void HandlePrepareLevel()
+    {
+        ViewManager.Instance.Show<IngameScreen>();
     }
 }
 
@@ -60,5 +70,6 @@ public class GameManager : StaticInstance<GameManager>
 public enum GameState
 {
     GetPlayerProgress = 0,
-    Tutorial = 1
+    Tutorial = 1,
+    PrepareLevel,
 }
