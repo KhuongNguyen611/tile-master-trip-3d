@@ -2,7 +2,7 @@ using UnityEngine;
 
 public abstract class View : MonoBehaviour
 {
-    public abstract void InitButtons();
+    public abstract void Init();
 
     public virtual void Hide() => gameObject.SetActive(false);
 

@@ -12,5 +12,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e3614b259c23d9d4893726f27ffc826a, type: 3}
   m_Name: ScriptablePlayerProgress
   m_EditorClassIdentifier: 
-  isCompleteTutorial: 0
-  currentLevel: 0
+  currentLevel: 1

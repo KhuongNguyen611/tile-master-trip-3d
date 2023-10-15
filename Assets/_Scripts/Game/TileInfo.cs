@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class TileControl : MonoBehaviour
+public class TileInfo : MonoBehaviour
 {
     [SerializeField]
     private SpriteRenderer _flowerSprite;

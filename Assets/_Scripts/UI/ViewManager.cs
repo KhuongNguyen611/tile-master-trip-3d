@@ -81,7 +81,7 @@ public class ViewManager : StaticInstance<ViewManager>
     {
         for (int i = 0; i < _views.Count; i++)
         {
-            _views[i].InitButtons();
+            _views[i].Init();
 
             _views[i].Hide();
         }

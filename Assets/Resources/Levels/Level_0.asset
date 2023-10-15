@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bd552466686afa54b8da5ea598eebcc4, type: 3}
-  m_Name: Level_Tutorial
+  m_Name: Level_0
   m_EditorClassIdentifier: 
   flowerAmountsList:
-  - flowerSO: {fileID: 11400000, guid: 72cd867d829b48f43b1324c4d48d377f, type: 2}
+  - scriptableFlower: {fileID: 11400000, guid: 72cd867d829b48f43b1324c4d48d377f, type: 2}
     numberOfTriple: 1
-  - flowerSO: {fileID: 11400000, guid: 7507dd260b40fb5478861b579a1a4153, type: 2}
+  - scriptableFlower: {fileID: 11400000, guid: 7507dd260b40fb5478861b579a1a4153, type: 2}
     numberOfTriple: 1
-  - flowerSO: {fileID: 11400000, guid: 151eebb7a24ac0849abfc3bdb975b613, type: 2}
+  - scriptableFlower: {fileID: 11400000, guid: 151eebb7a24ac0849abfc3bdb975b613, type: 2}
     numberOfTriple: 1

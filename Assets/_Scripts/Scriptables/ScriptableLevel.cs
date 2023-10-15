@@ -4,15 +4,15 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public struct FlowerAmount
+public class FlowerAmount
 {
-    public ScriptableFlower flowerSO;
+    public ScriptableFlower scriptableFlower;
 
-    public int numberOfTriple;
+    public int numberOfTriples = 1;
 }
 
 [CreateAssetMenu(fileName = "ScriptableLevel", menuName = "Scriptable Object/Level")]
 public class ScriptableLevel : ScriptableObject
 {
-    public List<FlowerAmount> flowerAmountsList;
+    public List<FlowerAmount> flowerAmountList;
 }
