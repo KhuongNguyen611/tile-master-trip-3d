@@ -5,19 +5,29 @@ public class GameManager : StaticInstance<GameManager>
 {
     public GameState State { get; private set; }
 
+    void Start()
+    {
+        StartGame();
+    }
+
+    public void StartGame()
+    {
+        ChangeState(GameState.StartGame);
+    }
+
     public void ChangeState(GameState newState)
     {
         State = newState;
         switch (newState)
         {
-            case GameState.StartLevel:
+            case GameState.StartGame:
                 HandleStartLevel();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
 
-        Debug.Log($"New Game State: {newState}");
+        Debug.Log($"Game State: {newState}");
     }
 
     private void HandleStartLevel()
@@ -29,5 +39,5 @@ public class GameManager : StaticInstance<GameManager>
 [Serializable]
 public enum GameState
 {
-    StartLevel = 0
+    StartGame = 0
 }

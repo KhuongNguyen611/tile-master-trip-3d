@@ -16,8 +16,6 @@ public class HomeScreen : View
     {
         ScriptablePlayerProgress playerProgress = ResourceSystem.Instance.PlayerProgress;
         _levelNumberTmp.text = playerProgress.currentLevel.ToString();
-        _playButton.onClick.AddListener(
-            () => GameManager.Instance.ChangeState(GameState.StartLevel)
-        );
+        _playButton.onClick.AddListener(() => GameManager.Instance.StartGame());
     }
 }

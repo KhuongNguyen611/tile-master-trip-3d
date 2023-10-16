@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.AI;
+using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
 
@@ -17,12 +20,15 @@ public class LevelManager : StaticInstance<LevelManager>
 
     public LevelState State { get; private set; }
 
+    private NavMeshTriangulation _triangulation;
+
+    void Start()
+    {
+        _triangulation = NavMesh.CalculateTriangulation();
+    }
+
     public void StartLevel()
     {
-        ViewManager.Instance.Show<IngameScreen>(false);
-
-        TilesStackController.Instance.ShowStack();
-
         ChangeState(LevelState.SpawnTiles);
     }
 
@@ -37,57 +43,53 @@ public class LevelManager : StaticInstance<LevelManager>
             case LevelState.DropTiles:
                 HandleDropTiles();
                 break;
+            case LevelState.LevelReady:
+                HandleLevelReady();
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
 
-        Debug.Log($"New Game State: {newState}");
+        Debug.Log($"Level State: {newState}");
     }
 
     private void HandleSpawnTiles()
     {
+        _tilesParent.SetActive(true);
+
+        StartCoroutine(SpawnTiles());
+    }
+
+    private IEnumerator<WaitForSeconds> SpawnTiles()
+    {
         ScriptableLevel scriptableLevel = ResourceSystem.Instance.GetCurrentLevel();
         List<FlowerAmount> flowerAmountList = scriptableLevel.flowerAmountList;
 
-        flowerAmountList.ForEach(
-            (flowerAmount) =>
+        for (int i = 0; i < flowerAmountList.Count; i++)
+        {
+            FlowerAmount flowerAmount = flowerAmountList[i];
+            int numberOfTriple = flowerAmount.numberOfTriples;
+            ScriptableFlower scriptableFlower = flowerAmount.scriptableFlower;
+            for (int j = 0; j < numberOfTriple; j++)
             {
-                int numberOfTriple = flowerAmount.numberOfTriples;
-                ScriptableFlower scriptableFlower = flowerAmount.scriptableFlower;
-                for (int i = 0; i < numberOfTriple; i++)
+                for (int k = 0; k < 3; k++)
                 {
-                    for (int j = 0; j < 3; j++)
-                    {
-                        SpawnTile(scriptableFlower);
-                    }
+                    yield return new WaitForSeconds(0.01f);
+
+                    GameObject flowerTile = Instantiate(_flowerTilePrefab, _tilesParent.transform);
+                    flowerTile.transform.localPosition = new Vector3(
+                        Random.Range(-5f, 5f),
+                        Random.Range(0f, 8f),
+                        Random.Range(-5f, 5f)
+                    );
+                    flowerTile.transform.eulerAngles = new Vector3(0, Random.Range(0, 180), 0);
+                    TileInfo tileInfo = flowerTile.GetComponent<TileInfo>();
+                    tileInfo.UpdateScriptableFlower(scriptableFlower);
+                    _tileInfoList.Add(tileInfo);
                 }
             }
-        );
-
+        }
         ChangeState(LevelState.DropTiles);
-    }
-
-    private void SpawnTile(ScriptableFlower scriptableFlower)
-    {
-        Vector3 spawnPoint = new Vector3(
-            Random.Range(-5f, 5f),
-            Random.Range(1f, 5f),
-            Random.Range(-3f, 8f)
-        );
-
-        if (!Physics.CheckSphere(spawnPoint, 1f))
-        {
-            GameObject flowerTile = Instantiate(_flowerTilePrefab, spawnPoint, Random.rotation);
-            flowerTile.transform.parent = _tilesParent.transform;
-            flowerTile.transform.rotation = Random.rotation;
-            TileInfo tileInfo = flowerTile.GetComponent<TileInfo>();
-            tileInfo.UpdateScriptableFlower(scriptableFlower);
-            _tileInfoList.Add(tileInfo);
-        }
-        else
-        {
-            SpawnTile(scriptableFlower);
-        }
     }
 
     private void HandleDropTiles()
@@ -98,11 +100,23 @@ public class LevelManager : StaticInstance<LevelManager>
                 tileInfo.Drop();
             }
         );
+        ChangeState(LevelState.LevelReady);
+    }
+
+    private void HandleLevelReady()
+    {
+        ViewManager.Instance.Show<IngameScreen>(false);
+
+        TilesStackController.Instance.ShowStack();
+
+        // BoundaryBoxController.Instance.ShowBoundary();
     }
 }
 
 public enum LevelState
 {
     SpawnTiles = 0,
-    DropTiles = 1
+    DropTiles = 1,
+
+    LevelReady = 2
 }
