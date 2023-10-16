@@ -1,9 +1,13 @@
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
+using cakeslice;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-public class TileInfo : MonoBehaviour
+public class TileInfo
+    : MonoBehaviour,
+        IPointerDownHandler,
+        IPointerUpHandler,
+        IPointerExitHandler,
+        IPointerEnterHandler
 {
     [SerializeField]
     private SpriteRenderer _upFlowerSprite;
@@ -12,17 +16,16 @@ public class TileInfo : MonoBehaviour
     private SpriteRenderer _downFlowerSprite;
 
     [SerializeField]
-    private SpriteRenderer _chooseSprite;
+    private Outline _outline;
 
     [SerializeField]
+    private Rigidbody _rigidbody;
+
     private ScriptableFlower _scriptableFlower;
 
-    void Start()
-    {
-        UpdateFlowerSprite(_scriptableFlower.sprite);
-    }
+    private bool _isOnTheGround;
 
-    void UpdateFlowerSprite(Sprite sprite)
+    private void UpdateFlowerSprite(Sprite sprite)
     {
         _upFlowerSprite.sprite = sprite;
         _downFlowerSprite.sprite = sprite;
@@ -32,5 +35,32 @@ public class TileInfo : MonoBehaviour
     {
         _scriptableFlower = scriptableFlower;
         UpdateFlowerSprite(_scriptableFlower.sprite);
+        _isOnTheGround = false;
+    }
+
+    public void Drop()
+    {
+        _rigidbody.isKinematic = false;
+        _isOnTheGround = true;
+    }
+
+    public void OnPointerDown(PointerEventData eventData) { }
+
+    public void OnPointerUp(PointerEventData eventData) { }
+
+    public void OnPointerEnter(PointerEventData eventData)
+    {
+        if (!_isOnTheGround)
+            return;
+
+        _outline.enabled = true;
+    }
+
+    public void OnPointerExit(PointerEventData eventData)
+    {
+        if (!_isOnTheGround)
+            return;
+
+        _outline.enabled = false;
     }
 }

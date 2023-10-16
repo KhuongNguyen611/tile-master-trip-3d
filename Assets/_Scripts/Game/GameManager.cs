@@ -22,8 +22,7 @@ public class GameManager : StaticInstance<GameManager>
 
     private void HandleStartLevel()
     {
-        ViewManager.Instance.Show<IngameScreen>(false);
-        SpawnTilesController.Instance.SpawnTiles();
+        LevelManager.Instance.StartLevel();
     }
 }
 
