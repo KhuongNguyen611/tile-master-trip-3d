@@ -6,7 +6,10 @@ using UnityEngine;
 public class TileInfo : MonoBehaviour
 {
     [SerializeField]
-    private SpriteRenderer _flowerSprite;
+    private SpriteRenderer _upFlowerSprite;
+
+    [SerializeField]
+    private SpriteRenderer _downFlowerSprite;
 
     [SerializeField]
     private SpriteRenderer _chooseSprite;
@@ -16,12 +19,18 @@ public class TileInfo : MonoBehaviour
 
     void Start()
     {
-        _flowerSprite.sprite = _scriptableFlower.sprite;
+        UpdateFlowerSprite(_scriptableFlower.sprite);
+    }
+
+    void UpdateFlowerSprite(Sprite sprite)
+    {
+        _upFlowerSprite.sprite = sprite;
+        _downFlowerSprite.sprite = sprite;
     }
 
     public void UpdateScriptableFlower(ScriptableFlower scriptableFlower)
     {
         _scriptableFlower = scriptableFlower;
-        _flowerSprite.sprite = _scriptableFlower.sprite;
+        UpdateFlowerSprite(_scriptableFlower.sprite);
     }
 }
