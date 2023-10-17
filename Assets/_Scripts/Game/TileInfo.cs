@@ -26,28 +26,16 @@ public class TileInfo
     [SerializeField]
     private Outline _outline;
 
-    private void UpdateFlowerSprite(Sprite sprite)
-    {
-        _upFlowerSprite.sprite = sprite;
-        _downFlowerSprite.sprite = sprite;
-    }
-
     public void UpdateScriptableFlower(ScriptableFlower scriptableFlower)
     {
         ScriptableFlower = scriptableFlower;
         UpdateFlowerSprite(ScriptableFlower.sprite);
     }
 
-    private void HandleDrop()
+    private void UpdateFlowerSprite(Sprite sprite)
     {
-        _rigidbody.isKinematic = false;
-    }
-
-    private void HandleStack()
-    {
-        _rigidbody.isKinematic = true;
-        _outline.enabled = false;
-        TilesStackController.Instance.AddTile(this);
+        _upFlowerSprite.sprite = sprite;
+        _downFlowerSprite.sprite = sprite;
     }
 
     public void ChangeState(TileState newState)
@@ -58,8 +46,13 @@ public class TileInfo
             case TileState.Drop:
                 HandleDrop();
                 break;
+            case TileState.Ground:
+                break;
             case TileState.Stack:
                 HandleStack();
+                break;
+            case TileState.Match:
+                HandleMatch();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -68,16 +61,28 @@ public class TileInfo
         Debug.Log($"Tile State: {newState}");
     }
 
+    private void HandleDrop()
+    {
+        _rigidbody.isKinematic = false;
+        ChangeState(TileState.Ground);
+    }
+
+    private void HandleStack()
+    {
+        _rigidbody.isKinematic = true;
+        _outline.enabled = false;
+        TilesStackController.Instance.AddTile(this);
+    }
+
+    private void HandleMatch()
+    {
+        gameObject.SetActive(false);
+    }
+
     void Update()
     {
         switch (State)
         {
-            case TileState.Drop:
-                if (Mathf.Approximately(_rigidbody.velocity.sqrMagnitude, 0f))
-                {
-                    ChangeState(TileState.Ground);
-                }
-                break;
             case TileState.Ground:
                 if (_outline.enabled)
                 {
@@ -128,5 +133,6 @@ public enum TileState
     Drop = 0,
 
     Ground = 1,
-    Stack = 2
+    Stack = 2,
+    Match = 3
 }

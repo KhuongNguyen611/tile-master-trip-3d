@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -36,22 +37,58 @@ public class TilesStackController : StaticInstance<TilesStackController>
         _listTileInfos.Add(newTile);
 
         _listTileInfos.Sort(
-            (t1, t2) => t1.ScriptableFlower.tileID.CompareTo(t2.ScriptableFlower.tileID)
+            (t1, t2) => t1.ScriptableFlower.flowerID.CompareTo(t2.ScriptableFlower.flowerID)
         );
 
+        newTile.transform.DOScale(Vector3.one * 0.7f, 0.5f);
+        newTile.transform.DORotate(Helpers.CheckRotation(newTile.transform.eulerAngles), 0.5f);
+
+        StartCoroutine(
+            SortStack(() =>
+            {
+                StartCoroutine(CheckMatch(newTile));
+            })
+        );
+    }
+
+    private IEnumerator SortStack(Action callback = null)
+    {
         for (int i = 0; i < _listTileInfos.Count; i++)
         {
             TileInfo currentTile = _listTileInfos[i];
             Vector3 tilePosition = _listBGs[i].transform.position;
             currentTile.transform.DOMove(tilePosition, 0.5f);
-            if (currentTile == newTile)
+        }
+
+        yield return new WaitForSeconds(0.5f);
+
+        if (callback != null)
+        {
+            callback.Invoke();
+        }
+    }
+
+    private IEnumerator CheckMatch(TileInfo newTile)
+    {
+        List<TileInfo> equalTilesList = _listTileInfos
+            .FindAll(t => t.ScriptableFlower.flowerID.Equals(newTile.ScriptableFlower.flowerID))
+            .ToList();
+
+        if (equalTilesList.Count == 3)
+        {
+            equalTilesList.ForEach(tile =>
             {
-                newTile.transform.DOScale(Vector3.one * 0.7f, 0.5f);
-                newTile.transform.DORotate(
-                    Helpers.CheckRotation(newTile.transform.eulerAngles),
-                    0.5f
-                );
-            }
+                tile.transform
+                    .DOScale(Vector3.zero, 0.5f)
+                    .OnComplete(() =>
+                    {
+                        tile.ChangeState(TileState.Match);
+                        _listTileInfos.Remove(tile);
+                    });
+            });
+
+            yield return new WaitForSeconds(0.5f);
+            StartCoroutine(SortStack());
         }
     }
 }

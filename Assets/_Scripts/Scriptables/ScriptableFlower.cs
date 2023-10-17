@@ -5,28 +5,28 @@ using UnityEngine;
 
 public enum FlowerID
 {
-    Flower_000,
-    Flower_001,
-    Flower_002,
-    Flower_003,
-    Flower_004,
-    Flower_005,
-    Flower_006,
-    Flower_007,
-    Flower_008,
-    Flower_009,
-    Flower_010,
-    Flower_011,
-    Flower_012,
-    Flower_013,
-    Flower_014,
-    Flower_015,
+    Flower_0,
+    Flower_1,
+    Flower_2,
+    Flower_3,
+    Flower_4,
+    Flower_5,
+    Flower_6,
+    Flower_7,
+    Flower_8,
+    Flower_9,
+    Flower_10,
+    Flower_11,
+    Flower_12,
+    Flower_13,
+    Flower_14,
+    Flower_15,
 }
 
 [CreateAssetMenu(fileName = "ScriptableFlower", menuName = "Scriptable Object/Flower")]
 public class ScriptableFlower : ScriptableObject
 {
-    public FlowerID tileID;
+    public FlowerID flowerID;
 
     public Sprite sprite;
 }

@@ -12,5 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e71c45217ef11e34b80ce0bb2d9fb3bc, type: 3}
   m_Name: Flower_8
   m_EditorClassIdentifier: 
-  tileID: 8
+  flowerID: 8
   sprite: {fileID: -507268278, guid: a356f9f15b6296c458204fa0a084d91c, type: 3}
