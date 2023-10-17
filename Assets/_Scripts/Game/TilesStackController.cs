@@ -78,16 +78,15 @@ public class TilesStackController : StaticInstance<TilesStackController>
         {
             equalTilesList.ForEach(tile =>
             {
-                tile.transform
-                    .DOScale(Vector3.zero, 0.5f)
-                    .OnComplete(() =>
-                    {
-                        tile.ChangeState(TileState.Match);
-                        _listTileInfos.Remove(tile);
-                    });
+                _listTileInfos.Remove(tile);
+
+                tile.transform.DOScale(Vector3.zero, 0.5f);
             });
 
+            StartCoroutine(LevelManager.Instance.MatchTiles(equalTilesList));
+
             yield return new WaitForSeconds(0.5f);
+
             StartCoroutine(SortStack());
         }
     }

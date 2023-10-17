@@ -43,6 +43,9 @@ public class TileInfo
         State = newState;
         switch (newState)
         {
+            case TileState.Spawn:
+                HandleSpawn();
+                break;
             case TileState.Drop:
                 HandleDrop();
                 break;
@@ -59,6 +62,12 @@ public class TileInfo
         }
 
         Debug.Log($"Tile State: {newState}");
+    }
+
+    private void HandleSpawn()
+    {
+        transform.localScale = Vector3.one;
+        gameObject.SetActive(true);
     }
 
     private void HandleDrop()
@@ -130,9 +139,10 @@ public class TileInfo
 
 public enum TileState
 {
-    Drop = 0,
+    Spawn,
+    Drop,
 
-    Ground = 1,
-    Stack = 2,
-    Match = 3
+    Ground,
+    Stack,
+    Match
 }

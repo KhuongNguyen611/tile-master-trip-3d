@@ -4,6 +4,7 @@ using System.Numerics;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEngine.Pool;
 using UnityEngine.Tilemaps;
 using Random = UnityEngine.Random;
 using Vector3 = UnityEngine.Vector3;
@@ -19,6 +20,37 @@ public class LevelManager : StaticInstance<LevelManager>
     private GameObject _tilesParent;
 
     private List<TileInfo> _tileInfoList = new();
+
+    [SerializeField]
+    private IngameScreen _ingameScreen;
+
+    private ObjectPool<TileInfo> _tilesPool;
+
+    void Start()
+    {
+        _tilesPool = new ObjectPool<TileInfo>(
+            () =>
+            {
+                return Instantiate(_flowerTilePrefab, _tilesParent.transform)
+                    .GetComponent<TileInfo>();
+            },
+            tileInfo =>
+            {
+                tileInfo.ChangeState(TileState.Spawn);
+            },
+            tileInfo =>
+            {
+                tileInfo.ChangeState(TileState.Match);
+            },
+            tileInfo =>
+            {
+                Destroy(tileInfo.gameObject);
+            },
+            false,
+            50,
+            100
+        );
+    }
 
     public void ChangeState(LevelState newState)
     {
@@ -65,14 +97,13 @@ public class LevelManager : StaticInstance<LevelManager>
                 {
                     yield return new WaitForSeconds(0.01f);
 
-                    GameObject flowerTile = Instantiate(_flowerTilePrefab, _tilesParent.transform);
-                    flowerTile.transform.localPosition = new Vector3(
+                    TileInfo tileInfo = _tilesPool.Get();
+                    tileInfo.transform.localPosition = new Vector3(
                         Random.Range(-5f, 5f),
                         Random.Range(0f, 8f),
                         Random.Range(-5f, 5f)
                     );
-                    flowerTile.transform.eulerAngles = new Vector3(0, Random.Range(0, 180), 0);
-                    TileInfo tileInfo = flowerTile.GetComponent<TileInfo>();
+                    tileInfo.transform.eulerAngles = new Vector3(0, Random.Range(0, 180), 0);
                     tileInfo.UpdateScriptableFlower(scriptableFlower);
                     _tileInfoList.Add(tileInfo);
                 }
@@ -87,6 +118,20 @@ public class LevelManager : StaticInstance<LevelManager>
             (tileInfo) =>
             {
                 tileInfo.ChangeState(TileState.Drop);
+            }
+        );
+    }
+
+    public IEnumerator<WaitForSeconds> MatchTiles(List<TileInfo> matchTileInfos)
+    {
+        _ingameScreen.AddStar(matchTileInfos[1].transform.position);
+
+        yield return new WaitForSeconds(0.5f);
+        matchTileInfos.ForEach(
+            (tileInfo) =>
+            {
+                _tileInfoList.Remove(tileInfo);
+                _tilesPool.Release(tileInfo);
             }
         );
     }
