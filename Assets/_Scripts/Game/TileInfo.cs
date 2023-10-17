@@ -1,7 +1,10 @@
 using System.Collections.Generic;
+using System.Transactions;
 using cakeslice;
+using DG.Tweening;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Assertions.Must;
 using UnityEngine.EventSystems;
 
 public class TileInfo
@@ -46,6 +49,44 @@ public class TileInfo
         _isOnTheGround = true;
     }
 
+    void Update()
+    {
+        if (_outline.enabled)
+        {
+            Vector3 currentRotation = transform.eulerAngles;
+            currentRotation.x = CheckAngle(currentRotation.x);
+            currentRotation.z = CheckAngle(currentRotation.z);
+            transform.DORotate(currentRotation, 0.5f);
+        }
+    }
+
+    private float CheckAngle(float angle)
+    {
+        if (angle > 0)
+        {
+            if (angle > -90)
+            {
+                angle = 0;
+            }
+            else
+            {
+                angle = -180;
+            }
+        }
+        else
+        {
+            if (angle < 90)
+            {
+                angle = 0;
+            }
+            else
+            {
+                angle = 180;
+            }
+        }
+        return angle;
+    }
+
     public void OnPointerDown(PointerEventData eventData) { }
 
     public void OnPointerUp(PointerEventData eventData) { }
@@ -56,6 +97,7 @@ public class TileInfo
             return;
 
         _outline.enabled = true;
+        _rigidbody.isKinematic = true;
     }
 
     public void OnPointerExit(PointerEventData eventData)
@@ -64,5 +106,6 @@ public class TileInfo
             return;
 
         _outline.enabled = false;
+        _rigidbody.isKinematic = false;
     }
 }

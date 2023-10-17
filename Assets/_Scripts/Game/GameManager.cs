@@ -7,7 +7,7 @@ public class GameManager : StaticInstance<GameManager>
 
     void Start()
     {
-        StartGame();
+        // StartGame();
     }
 
     public void StartGame()

@@ -29,6 +29,10 @@ public class LevelManager : StaticInstance<LevelManager>
 
     public void StartLevel()
     {
+        ViewManager.Instance.Show<IngameScreen>(false);
+
+        TilesStackController.Instance.ShowStack();
+
         ChangeState(LevelState.SpawnTiles);
     }
 
@@ -42,9 +46,6 @@ public class LevelManager : StaticInstance<LevelManager>
                 break;
             case LevelState.DropTiles:
                 HandleDropTiles();
-                break;
-            case LevelState.LevelReady:
-                HandleLevelReady();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -100,16 +101,6 @@ public class LevelManager : StaticInstance<LevelManager>
                 tileInfo.Drop();
             }
         );
-        ChangeState(LevelState.LevelReady);
-    }
-
-    private void HandleLevelReady()
-    {
-        ViewManager.Instance.Show<IngameScreen>(false);
-
-        TilesStackController.Instance.ShowStack();
-
-        // BoundaryBoxController.Instance.ShowBoundary();
     }
 }
 
@@ -117,6 +108,4 @@ public enum LevelState
 {
     SpawnTiles = 0,
     DropTiles = 1,
-
-    LevelReady = 2
 }

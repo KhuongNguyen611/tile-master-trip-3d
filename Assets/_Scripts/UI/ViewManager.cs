@@ -52,6 +52,18 @@ public class ViewManager : StaticInstance<ViewManager>
         }
     }
 
+    // public void Hide<T>()
+    //     where T : View
+    // {
+    //     for (int i = 0; i < _views.Count; i++)
+    //     {
+    //         if (_views[i] is T)
+    //         {
+    //             _views[i].Hide();
+    //         }
+    //     }
+    // }
+
     public void Show(View view, bool remember = true)
     {
         if (_currentView != null)
