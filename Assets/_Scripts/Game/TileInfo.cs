@@ -1,11 +1,7 @@
 using System;
-using System.Collections.Generic;
-using System.Transactions;
 using cakeslice;
 using DG.Tweening;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Assertions.Must;
 using UnityEngine.EventSystems;
 
 public class TileInfo
@@ -14,21 +10,21 @@ public class TileInfo
         IPointerExitHandler,
         IPointerClickHandler
 {
+    public ScriptableFlower ScriptableFlower { get; private set; }
+
     [SerializeField]
     private SpriteRenderer _upFlowerSprite;
 
     [SerializeField]
     private SpriteRenderer _downFlowerSprite;
 
-    [SerializeField]
-    private Outline _outline;
+    public TileState State { get; private set; }
 
     [SerializeField]
     private Rigidbody _rigidbody;
 
-    private ScriptableFlower _scriptableFlower;
-
-    public TileState State { get; private set; }
+    [SerializeField]
+    private Outline _outline;
 
     private void UpdateFlowerSprite(Sprite sprite)
     {
@@ -38,8 +34,20 @@ public class TileInfo
 
     public void UpdateScriptableFlower(ScriptableFlower scriptableFlower)
     {
-        _scriptableFlower = scriptableFlower;
-        UpdateFlowerSprite(_scriptableFlower.sprite);
+        ScriptableFlower = scriptableFlower;
+        UpdateFlowerSprite(ScriptableFlower.sprite);
+    }
+
+    private void HandleDrop()
+    {
+        _rigidbody.isKinematic = false;
+    }
+
+    private void HandleStack()
+    {
+        _rigidbody.isKinematic = true;
+        _outline.enabled = false;
+        TilesStackController.Instance.AddTile(this);
     }
 
     public void ChangeState(TileState newState)
@@ -58,18 +66,6 @@ public class TileInfo
         }
 
         Debug.Log($"Tile State: {newState}");
-    }
-
-    private void HandleDrop()
-    {
-        _rigidbody.isKinematic = false;
-    }
-
-    private void HandleStack()
-    {
-        _rigidbody.isKinematic = true;
-        _outline.enabled = false;
-        TilesStackController.Instance.AddTile(this);
     }
 
     void Update()

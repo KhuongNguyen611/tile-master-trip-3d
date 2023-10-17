@@ -10,6 +10,8 @@ using Vector3 = UnityEngine.Vector3;
 
 public class LevelManager : StaticInstance<LevelManager>
 {
+    public LevelState State { get; private set; }
+
     [SerializeField]
     private GameObject _flowerTilePrefab;
 
@@ -17,8 +19,6 @@ public class LevelManager : StaticInstance<LevelManager>
     private GameObject _tilesParent;
 
     private List<TileInfo> _tileInfoList = new();
-
-    public LevelState State { get; private set; }
 
     public void ChangeState(LevelState newState)
     {
