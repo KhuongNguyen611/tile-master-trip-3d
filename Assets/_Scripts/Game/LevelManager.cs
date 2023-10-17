@@ -20,22 +20,6 @@ public class LevelManager : StaticInstance<LevelManager>
 
     public LevelState State { get; private set; }
 
-    private NavMeshTriangulation _triangulation;
-
-    void Start()
-    {
-        _triangulation = NavMesh.CalculateTriangulation();
-    }
-
-    public void StartLevel()
-    {
-        ViewManager.Instance.Show<IngameScreen>(false);
-
-        TilesStackController.Instance.ShowStack();
-
-        ChangeState(LevelState.SpawnTiles);
-    }
-
     public void ChangeState(LevelState newState)
     {
         State = newState;
@@ -56,6 +40,10 @@ public class LevelManager : StaticInstance<LevelManager>
 
     private void HandleSpawnTiles()
     {
+        ViewManager.Instance.Show<IngameScreen>(false);
+
+        TilesStackController.Instance.ShowStack();
+
         _tilesParent.SetActive(true);
 
         StartCoroutine(SpawnTiles());
@@ -98,7 +86,7 @@ public class LevelManager : StaticInstance<LevelManager>
         _tileInfoList.ForEach(
             (tileInfo) =>
             {
-                tileInfo.Drop();
+                tileInfo.ChangeState(TileState.Drop);
             }
         );
     }

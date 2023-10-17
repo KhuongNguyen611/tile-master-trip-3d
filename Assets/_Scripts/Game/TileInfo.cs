@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Transactions;
 using cakeslice;
@@ -9,10 +10,9 @@ using UnityEngine.EventSystems;
 
 public class TileInfo
     : MonoBehaviour,
-        IPointerDownHandler,
-        IPointerUpHandler,
+        IPointerEnterHandler,
         IPointerExitHandler,
-        IPointerEnterHandler
+        IPointerClickHandler
 {
     [SerializeField]
     private SpriteRenderer _upFlowerSprite;
@@ -28,7 +28,7 @@ public class TileInfo
 
     private ScriptableFlower _scriptableFlower;
 
-    private bool _isOnTheGround;
+    public TileState State { get; private set; }
 
     private void UpdateFlowerSprite(Sprite sprite)
     {
@@ -40,72 +40,97 @@ public class TileInfo
     {
         _scriptableFlower = scriptableFlower;
         UpdateFlowerSprite(_scriptableFlower.sprite);
-        _isOnTheGround = false;
     }
 
-    public void Drop()
+    public void ChangeState(TileState newState)
+    {
+        State = newState;
+        switch (newState)
+        {
+            case TileState.Drop:
+                HandleDrop();
+                break;
+            case TileState.Stack:
+                HandleStack();
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
+        }
+
+        Debug.Log($"Tile State: {newState}");
+    }
+
+    private void HandleDrop()
     {
         _rigidbody.isKinematic = false;
-        _isOnTheGround = true;
+    }
+
+    private void HandleStack()
+    {
+        _rigidbody.isKinematic = true;
+        _outline.enabled = false;
+        TilesStackController.Instance.AddTile(this);
     }
 
     void Update()
     {
-        if (_outline.enabled)
+        switch (State)
         {
-            Vector3 currentRotation = transform.eulerAngles;
-            currentRotation.x = CheckAngle(currentRotation.x);
-            currentRotation.z = CheckAngle(currentRotation.z);
-            transform.DORotate(currentRotation, 0.5f);
+            case TileState.Drop:
+                if (Mathf.Approximately(_rigidbody.velocity.sqrMagnitude, 0f))
+                {
+                    ChangeState(TileState.Ground);
+                }
+                break;
+            case TileState.Ground:
+                if (_outline.enabled)
+                {
+                    Vector3 currentRotation = transform.eulerAngles;
+                    currentRotation.x = Helpers.CheckAngle(currentRotation.x);
+                    currentRotation.z = Helpers.CheckAngle(currentRotation.z);
+                    transform.DORotate(currentRotation, 0.5f);
+                }
+                break;
         }
     }
-
-    private float CheckAngle(float angle)
-    {
-        if (angle > 0)
-        {
-            if (angle > -90)
-            {
-                angle = 0;
-            }
-            else
-            {
-                angle = -180;
-            }
-        }
-        else
-        {
-            if (angle < 90)
-            {
-                angle = 0;
-            }
-            else
-            {
-                angle = 180;
-            }
-        }
-        return angle;
-    }
-
-    public void OnPointerDown(PointerEventData eventData) { }
-
-    public void OnPointerUp(PointerEventData eventData) { }
 
     public void OnPointerEnter(PointerEventData eventData)
     {
-        if (!_isOnTheGround)
-            return;
-
-        _outline.enabled = true;
-        _rigidbody.isKinematic = true;
+        switch (State)
+        {
+            case TileState.Ground:
+                _outline.enabled = true;
+                _rigidbody.isKinematic = true;
+                break;
+        }
     }
 
     public void OnPointerExit(PointerEventData eventData)
     {
-        if (!_isOnTheGround)
-            return;
-
-        _outline.enabled = false;
-        _rigidbody.isKinematic = false;
+        switch (State)
+        {
+            case TileState.Ground:
+                _outline.enabled = false;
+                _rigidbody.isKinematic = false;
+                break;
+        }
     }
+
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        switch (State)
+        {
+            case TileState.Ground:
+                ChangeState(TileState.Stack);
+                break;
+        }
+    }
+}
+
+public enum TileState
+{
+    Drop = 0,
+
+    Ground = 1,
+    Stack = 2
 }

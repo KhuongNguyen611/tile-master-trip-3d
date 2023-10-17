@@ -5,16 +5,6 @@ public class GameManager : StaticInstance<GameManager>
 {
     public GameState State { get; private set; }
 
-    void Start()
-    {
-        // StartGame();
-    }
-
-    public void StartGame()
-    {
-        ChangeState(GameState.StartGame);
-    }
-
     public void ChangeState(GameState newState)
     {
         State = newState;
@@ -32,7 +22,7 @@ public class GameManager : StaticInstance<GameManager>
 
     private void HandleStartLevel()
     {
-        LevelManager.Instance.StartLevel();
+        LevelManager.Instance.ChangeState(LevelState.SpawnTiles);
     }
 }
 
