@@ -17,6 +17,9 @@ public class TilesStackController : StaticInstance<TilesStackController>
 
     private List<TileInfo> _listTileInfos = new();
 
+    private IEnumerator _sortStackCou;
+    private IEnumerator _checkMatchCou;
+
     void Start()
     {
         foreach (Transform bg in _stackBgs)
@@ -43,12 +46,20 @@ public class TilesStackController : StaticInstance<TilesStackController>
         newTile.transform.DOScale(Vector3.one * 0.7f, 0.5f);
         newTile.transform.DORotate(Helpers.CheckRotation(newTile.transform.eulerAngles), 0.5f);
 
-        StartCoroutine(
-            SortStack(() =>
+        if (_sortStackCou != null)
+        {
+            StopCoroutine(_sortStackCou);
+        }
+        _sortStackCou = SortStack(() =>
+        {
+            if (_checkMatchCou != null)
             {
-                StartCoroutine(CheckMatch(newTile));
-            })
-        );
+                StopCoroutine(_checkMatchCou);
+            }
+            _checkMatchCou = CheckMatch(newTile);
+            StartCoroutine(_checkMatchCou);
+        });
+        StartCoroutine(_sortStackCou);
     }
 
     private IEnumerator SortStack(Action callback = null)
