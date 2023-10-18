@@ -10,7 +10,7 @@ public class GameManager : StaticInstance<GameManager>
         State = newState;
         switch (newState)
         {
-            case GameState.StartGame:
+            case GameState.StartLevel:
                 HandleStartLevel();
                 break;
             default:
@@ -29,5 +29,5 @@ public class GameManager : StaticInstance<GameManager>
 [Serializable]
 public enum GameState
 {
-    StartGame = 0
+    StartLevel
 }

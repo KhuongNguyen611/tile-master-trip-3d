@@ -1,8 +1,8 @@
 version: 2
 tpsheetFileNames:
-- Assets/ImportAssets/Sprites/Flowers/Flowers.tpsheet
+- Assets/Sprites/Flowers/Flowers.tpsheet
 textureFileNames:
-- Assets/ImportAssets/Sprites/Flowers/Flowers.png
+- Assets/Sprites/Flowers/Flowers.png
 normalmapFileNames:
 - 
 enableDebugOutput: 0
