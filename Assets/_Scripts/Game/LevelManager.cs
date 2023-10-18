@@ -19,28 +19,32 @@ public class LevelManager : StaticInstance<LevelManager>
     [SerializeField]
     private GameObject _tilesParent;
 
-    private List<TileInfo> _tileInfoList = new();
+    private List<TileInfo> _listTileInfos = new();
 
     [SerializeField]
     private IngameScreen _ingameScreen;
 
-    private ObjectPool<TileInfo> _tilesPool;
+    private ObjectPool<TileInfo> _poolTiles;
+
+    [SerializeField]
+    private TilesStackController _tileStackController;
+
+    [SerializeField]
+    private PopupController _popupController;
 
     void Start()
     {
-        _tilesPool = new ObjectPool<TileInfo>(
+        _poolTiles = new ObjectPool<TileInfo>(
             () =>
             {
                 return Instantiate(_flowerTilePrefab, _tilesParent.transform)
                     .GetComponent<TileInfo>();
             },
+            null,
             tileInfo =>
             {
-                tileInfo.ChangeState(TileState.Spawn);
-            },
-            tileInfo =>
-            {
-                tileInfo.ChangeState(TileState.Match);
+                tileInfo.gameObject.SetActive(false);
+                tileInfo.transform.position = Vector3.zero;
             },
             tileInfo =>
             {
@@ -50,6 +54,9 @@ public class LevelManager : StaticInstance<LevelManager>
             50,
             100
         );
+
+        _tilesParent.SetActive(false);
+        _tileStackController.gameObject.SetActive(false);
     }
 
     public void ChangeState(LevelState newState)
@@ -63,6 +70,18 @@ public class LevelManager : StaticInstance<LevelManager>
             case LevelState.DropTiles:
                 HandleDropTiles();
                 break;
+            case LevelState.Win:
+                HandleWin();
+                break;
+            case LevelState.Lose:
+                HandleLose();
+                break;
+            case LevelState.Hide:
+                HandleHide();
+                break;
+            case LevelState.Restart:
+                HandleRestart();
+                break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
         }
@@ -72,11 +91,9 @@ public class LevelManager : StaticInstance<LevelManager>
 
     private void HandleSpawnTiles()
     {
-        ViewManager.Instance.Show<IngameScreen>(false);
+        ViewManager.Instance.Show<IngameScreen>();
 
-        TilesStackController.Instance.ShowStack();
-
-        _tilesParent.SetActive(true);
+        _tileStackController.gameObject.SetActive(true);
 
         StartCoroutine(SpawnTiles());
     }
@@ -97,15 +114,17 @@ public class LevelManager : StaticInstance<LevelManager>
                 {
                     yield return new WaitForSeconds(0.01f);
 
-                    TileInfo tileInfo = _tilesPool.Get();
+                    TileInfo tileInfo = _poolTiles.Get();
+                    tileInfo.transform.parent = _tilesParent.transform;
                     tileInfo.transform.localPosition = new Vector3(
                         Random.Range(-5f, 5f),
                         Random.Range(0f, 8f),
                         Random.Range(-5f, 5f)
                     );
+                    tileInfo.ChangeState(TileState.Spawn);
                     tileInfo.transform.eulerAngles = new Vector3(0, Random.Range(0, 180), 0);
                     tileInfo.UpdateScriptableFlower(scriptableFlower);
-                    _tileInfoList.Add(tileInfo);
+                    _listTileInfos.Add(tileInfo);
                 }
             }
         }
@@ -114,12 +133,19 @@ public class LevelManager : StaticInstance<LevelManager>
 
     private void HandleDropTiles()
     {
-        _tileInfoList.ForEach(
+        _tilesParent.SetActive(true);
+
+        _listTileInfos.ForEach(
             (tileInfo) =>
             {
                 tileInfo.ChangeState(TileState.Drop);
             }
         );
+    }
+
+    public void AddTile(TileInfo tileInfo)
+    {
+        _tileStackController.AddTile(tileInfo);
     }
 
     public IEnumerator<WaitForSeconds> MatchTiles(List<TileInfo> matchTileInfos)
@@ -130,15 +156,70 @@ public class LevelManager : StaticInstance<LevelManager>
         matchTileInfos.ForEach(
             (tileInfo) =>
             {
-                _tileInfoList.Remove(tileInfo);
-                _tilesPool.Release(tileInfo);
+                _listTileInfos.Remove(tileInfo);
+                _poolTiles.Release(tileInfo);
             }
         );
+
+        if (_listTileInfos.Count == 0)
+        {
+            ChangeState(LevelState.Win);
+        }
+    }
+
+    private void HandleWin()
+    {
+        _popupController.gameObject.SetActive(true);
+        ScriptablePlayerProgress playerProgress = ResourceSystem.Instance.PlayerProgress;
+        playerProgress.TotalStar += _ingameScreen.StarAmount;
+        playerProgress.currentLevel++;
+        _popupController.UpdateResult(_ingameScreen.StarAmount);
+        StopAllCoroutines();
+    }
+
+    private void HandleLose()
+    {
+        _popupController.gameObject.SetActive(true);
+        _popupController.UpdateResult(-1);
+        StopAllCoroutines();
+    }
+
+    private void HandleHide()
+    {
+        Reset();
+        _tilesParent.SetActive(false);
+        _tileStackController.gameObject.SetActive(false);
+    }
+
+    private void HandleRestart()
+    {
+        Reset();
+        _tilesParent.SetActive(false);
+        ChangeState(LevelState.SpawnTiles);
+    }
+
+    private void Reset()
+    {
+        _listTileInfos.ForEach(
+            (tileInfo) =>
+            {
+                _poolTiles.Release(tileInfo);
+            }
+        );
+        _listTileInfos.Clear();
+
+        _ingameScreen.ResetUI();
+
+        _tileStackController.ClearStack(_poolTiles);
     }
 }
 
 public enum LevelState
 {
-    SpawnTiles = 0,
-    DropTiles = 1,
+    SpawnTiles,
+    DropTiles,
+    Win,
+    Lose,
+    Hide,
+    Restart
 }

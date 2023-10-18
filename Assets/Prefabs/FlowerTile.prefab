@@ -313,6 +313,10 @@ MonoBehaviour:
   _downFlowerSprite: {fileID: 1448685695083976335}
   _rigidbody: {fileID: 5575094601287544572}
   _outline: {fileID: 4354571146937015762}
+  _listCapsuleColliders:
+  - {fileID: 258619501538096813}
+  - {fileID: 350415625109637872}
+  - {fileID: 5487887689591649949}
 --- !u!114 &4354571146937015762
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -7,7 +7,7 @@ using UnityEngine.Pool;
 
 public class IngameScreen : View
 {
-    private int _starAmount;
+    public int StarAmount { get; private set; }
 
     [SerializeField]
     private TextMeshProUGUI _starTmp;
@@ -48,11 +48,6 @@ public class IngameScreen : View
 
     public override void Init()
     {
-        _starAmount = 0;
-        _starTmp.text = _starAmount.ToString();
-        ScriptablePlayerProgress playerProgress = ResourceSystem.Instance.PlayerProgress;
-        _levelTmp.text = "Lv." + playerProgress.currentLevel.ToString();
-
         _starPool = new ObjectPool<RectTransform>(
             () =>
             {
@@ -75,6 +70,7 @@ public class IngameScreen : View
             6,
             10
         );
+        ResetUI();
     }
 
     public void AddStar(Vector3 objectPosition)
@@ -119,8 +115,8 @@ public class IngameScreen : View
         sequence.Append(starRect.DOMove(_starRectOnBar.position, 0.25f));
         sequence.AppendCallback(() =>
         {
-            _starAmount++;
-            _starTmp.text = _starAmount.ToString();
+            StarAmount++;
+            _starTmp.text = StarAmount.ToString();
             _starPool.Release(starRect);
         });
     }
@@ -141,5 +137,16 @@ public class IngameScreen : View
                 _comboBar.SetActive(false);
             }
         }
+    }
+
+    public void ResetUI()
+    {
+        StarAmount = 0;
+        _starTmp.text = StarAmount.ToString();
+        ScriptablePlayerProgress playerProgress = ResourceSystem.Instance.PlayerProgress;
+        _levelTmp.text = "Lv." + playerProgress.currentLevel.ToString();
+        _comboBar.SetActive(false);
+        _comboCount = 0;
+        _comboTimer = 0;
     }
 }

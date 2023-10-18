@@ -1,8 +1,10 @@
 using System;
+using System.Collections.Generic;
 using cakeslice;
 using DG.Tweening;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.Tilemaps;
 
 public class TileInfo
     : MonoBehaviour,
@@ -25,6 +27,9 @@ public class TileInfo
 
     [SerializeField]
     private Outline _outline;
+
+    [SerializeField]
+    private List<CapsuleCollider> _listCapsuleColliders;
 
     public void UpdateScriptableFlower(ScriptableFlower scriptableFlower)
     {
@@ -55,7 +60,6 @@ public class TileInfo
                 HandleStack();
                 break;
             case TileState.Match:
-                HandleMatch();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -72,20 +76,27 @@ public class TileInfo
 
     private void HandleDrop()
     {
+        _listCapsuleColliders.ForEach(
+            (collider) =>
+            {
+                collider.enabled = true;
+            }
+        );
         _rigidbody.isKinematic = false;
         ChangeState(TileState.Ground);
     }
 
     private void HandleStack()
     {
+        _listCapsuleColliders.ForEach(
+            (collider) =>
+            {
+                collider.enabled = false;
+            }
+        );
         _rigidbody.isKinematic = true;
         _outline.enabled = false;
-        TilesStackController.Instance.AddTile(this);
-    }
-
-    private void HandleMatch()
-    {
-        gameObject.SetActive(false);
+        LevelManager.Instance.AddTile(this);
     }
 
     void Update()
@@ -141,8 +152,7 @@ public enum TileState
 {
     Spawn,
     Drop,
-
     Ground,
     Stack,
-    Match
+    Match,
 }

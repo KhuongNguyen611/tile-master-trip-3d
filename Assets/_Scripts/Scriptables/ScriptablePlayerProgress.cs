@@ -8,5 +8,8 @@ public class ScriptablePlayerProgress : ScriptableObject
     [HideInInspector]
     public bool IsCompletedTutorial => !currentLevel.Equals(0);
 
+    [HideInInspector]
+    public int TotalStar;
+
     public int currentLevel;
 }

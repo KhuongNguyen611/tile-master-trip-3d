@@ -4,9 +4,10 @@ using System.Collections.Generic;
 using System.Linq;
 using DG.Tweening;
 using UnityEngine;
+using UnityEngine.Pool;
 using UnityEngine.Tilemaps;
 
-public class TilesStackController : StaticInstance<TilesStackController>
+public class TilesStackController : MonoBehaviour
 {
     [SerializeField]
     private Transform _stackBgs;
@@ -17,9 +18,6 @@ public class TilesStackController : StaticInstance<TilesStackController>
 
     private List<TileInfo> _listTileInfos = new();
 
-    private IEnumerator _sortStackCou;
-    private IEnumerator _checkMatchCou;
-
     void Start()
     {
         foreach (Transform bg in _stackBgs)
@@ -28,13 +26,11 @@ public class TilesStackController : StaticInstance<TilesStackController>
         }
     }
 
-    public void ShowStack()
-    {
-        _stackBgs.gameObject.SetActive(true);
-    }
-
     public void AddTile(TileInfo newTile)
     {
+        if (_listTileInfos.Count >= _listBGs.Count - 1)
+            return;
+
         newTile.transform.parent = _stackTiles.transform;
 
         _listTileInfos.Add(newTile);
@@ -46,23 +42,19 @@ public class TilesStackController : StaticInstance<TilesStackController>
         newTile.transform.DOScale(Vector3.one * 0.7f, 0.5f);
         newTile.transform.DORotate(Helpers.CheckRotation(newTile.transform.eulerAngles), 0.5f);
 
-        if (_sortStackCou != null)
+        var sequence = DOTween.Sequence();
+        sequence.AppendCallback(() =>
         {
-            StopCoroutine(_sortStackCou);
-        }
-        _sortStackCou = SortStack(() =>
-        {
-            if (_checkMatchCou != null)
-            {
-                StopCoroutine(_checkMatchCou);
-            }
-            _checkMatchCou = CheckMatch(newTile);
-            StartCoroutine(_checkMatchCou);
+            SortStack();
         });
-        StartCoroutine(_sortStackCou);
+        sequence.AppendInterval(0.5f);
+        sequence.AppendCallback(() =>
+        {
+            CheckMatch(newTile);
+        });
     }
 
-    private IEnumerator SortStack(Action callback = null)
+    private void SortStack()
     {
         for (int i = 0; i < _listTileInfos.Count; i++)
         {
@@ -70,35 +62,53 @@ public class TilesStackController : StaticInstance<TilesStackController>
             Vector3 tilePosition = _listBGs[i].transform.position;
             currentTile.transform.DOMove(tilePosition, 0.5f);
         }
-
-        yield return new WaitForSeconds(0.5f);
-
-        if (callback != null)
-        {
-            callback.Invoke();
-        }
     }
 
-    private IEnumerator CheckMatch(TileInfo newTile)
+    private void CheckMatch(TileInfo newTile)
     {
-        List<TileInfo> equalTilesList = _listTileInfos
-            .FindAll(t => t.ScriptableFlower.flowerID.Equals(newTile.ScriptableFlower.flowerID))
-            .ToList();
+        List<TileInfo> equalTilesList = _listTileInfos.FindAll(
+            t =>
+                t.ScriptableFlower.flowerID.Equals(newTile.ScriptableFlower.flowerID)
+                && t.State != TileState.Match
+        );
+        var sequence = DOTween.Sequence();
 
         if (equalTilesList.Count == 3)
         {
             equalTilesList.ForEach(tile =>
             {
+                tile.ChangeState(TileState.Match);
+
                 _listTileInfos.Remove(tile);
 
                 tile.transform.DOScale(Vector3.zero, 0.5f);
             });
 
             StartCoroutine(LevelManager.Instance.MatchTiles(equalTilesList));
-
-            yield return new WaitForSeconds(0.5f);
-
-            StartCoroutine(SortStack());
+            sequence.AppendInterval(0.5f);
         }
+        sequence.AppendCallback(() =>
+        {
+            SortStack();
+        });
+        sequence.AppendInterval(0.5f);
+        sequence.AppendCallback(() =>
+        {
+            if (_listTileInfos.Count == _listBGs.Count - 1)
+            {
+                LevelManager.Instance.ChangeState(LevelState.Lose);
+            }
+        });
+    }
+
+    public void ClearStack(ObjectPool<TileInfo> poolTiles)
+    {
+        _listTileInfos.ForEach(
+            (tileInfo) =>
+            {
+                poolTiles.Release(tileInfo);
+            }
+        );
+        _listTileInfos.Clear();
     }
 }

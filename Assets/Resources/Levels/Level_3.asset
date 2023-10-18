@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd552466686afa54b8da5ea598eebcc4, type: 3}
+  m_Name: Level_3
+  m_EditorClassIdentifier: 
+  flowerAmountList:
+  - scriptableFlower: {fileID: 11400000, guid: 72cd867d829b48f43b1324c4d48d377f, type: 2}
+    numberOfTriples: 2
+  - scriptableFlower: {fileID: 11400000, guid: 7507dd260b40fb5478861b579a1a4153, type: 2}
+    numberOfTriples: 2
+  - scriptableFlower: {fileID: 11400000, guid: 151eebb7a24ac0849abfc3bdb975b613, type: 2}
+    numberOfTriples: 2
+  - scriptableFlower: {fileID: 11400000, guid: c725e5294b06f314ba7d372c143639a3, type: 2}
+    numberOfTriples: 1
+  - scriptableFlower: {fileID: 11400000, guid: 4861e2e096c15544b94578440e3c27ac, type: 2}
+    numberOfTriples: 1
+  - scriptableFlower: {fileID: 11400000, guid: d10f482e0c07dc94993df10ae81e7b7f, type: 2}
+    numberOfTriples: 1
+  - scriptableFlower: {fileID: 11400000, guid: 8ddb3f990d7c51b44b0946a8da46a576, type: 2}
+    numberOfTriples: 1
+  - scriptableFlower: {fileID: 11400000, guid: fee737f1bfa2ab84b858ef2cead8c476, type: 2}
+    numberOfTriples: 1
+  - scriptableFlower: {fileID: 11400000, guid: 47a0ff7d72690da48932695426a1c8a4, type: 2}
+    numberOfTriples: 1
+  - scriptableFlower: {fileID: 11400000, guid: 920d316da3fee804c9dec25c7401ef28, type: 2}
+    numberOfTriples: 1
