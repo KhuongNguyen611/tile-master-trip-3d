@@ -31,6 +31,8 @@ public class TilesStackController : MonoBehaviour
         if (_listTileInfos.Count >= _listBGs.Count - 1)
             return;
 
+        AudioSystem.Instance.PlaySFX("PickTile");
+
         newTile.transform.parent = _stackTiles.transform;
 
         _listTileInfos.Add(newTile);
@@ -66,49 +68,54 @@ public class TilesStackController : MonoBehaviour
 
     private void CheckMatch(TileInfo newTile)
     {
-        List<TileInfo> equalTilesList = _listTileInfos.FindAll(
-            t =>
-                t.ScriptableFlower.flowerID.Equals(newTile.ScriptableFlower.flowerID)
-                && t.State != TileState.Match
+        int index = _listTileInfos.FindIndex(t => t == newTile);
+        List<TileInfo> subList = _listTileInfos.GetRange(0, index + 1);
+        subList = subList.FindAll(
+            t => t.ScriptableFlower.flowerID.Equals(newTile.ScriptableFlower.flowerID)
         );
+
         var sequence = DOTween.Sequence();
-
-        if (equalTilesList.Count == 3)
+        if (subList.Count == 3)
         {
-            equalTilesList.ForEach(tile =>
+            subList.ForEach(tile =>
             {
-                tile.ChangeState(TileState.Match);
-
                 _listTileInfos.Remove(tile);
-
-                tile.transform.DOScale(Vector3.zero, 0.5f);
+                tile.transform
+                    .DOScale(Vector3.zero, 0.5f)
+                    .OnComplete(() =>
+                    {
+                        tile.ChangeState(TileState.Match);
+                    });
             });
-
-            StartCoroutine(LevelManager.Instance.MatchTiles(equalTilesList));
+            StartCoroutine(LevelManager.Instance.MatchTiles(subList));
+            sequence.AppendInterval(0.5f);
+            sequence.AppendCallback(() =>
+            {
+                SortStack();
+            });
             sequence.AppendInterval(0.5f);
         }
+
         sequence.AppendCallback(() =>
         {
-            SortStack();
-        });
-        sequence.AppendInterval(0.5f);
-        sequence.AppendCallback(() =>
-        {
-            if (_listTileInfos.Count == _listBGs.Count - 1)
+            if (_listTileInfos.Count >= _listBGs.Count - 1)
             {
-                LevelManager.Instance.ChangeState(LevelState.Lose);
+                if (LevelManager.Instance.State != LevelState.Lose)
+                {
+                    LevelManager.Instance.ChangeState(LevelState.Lose);
+                }
             }
         });
     }
 
     public void ClearStack(ObjectPool<TileInfo> poolTiles)
     {
-        _listTileInfos.ForEach(
-            (tileInfo) =>
-            {
-                poolTiles.Release(tileInfo);
-            }
-        );
+        // _listTileInfos.ForEach(
+        //     (tileInfo) =>
+        //     {
+        //         poolTiles.Release(tileInfo);
+        //     }
+        // );
         _listTileInfos.Clear();
     }
 }

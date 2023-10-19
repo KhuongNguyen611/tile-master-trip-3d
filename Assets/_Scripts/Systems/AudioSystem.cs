@@ -1,24 +1,55 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 
-/// <summary>
-/// Insanely basic audio system which supports 3D sound.
-/// Ensure you change the 'Sounds' audio source to use 3D spatial blend if you intend to use 3D sounds.
-/// </summary>
-public class AudioSystem : StaticInstance<AudioSystem> {
-    [SerializeField] private AudioSource _musicSource;
-    [SerializeField] private AudioSource _soundsSource;
+public class AudioSystem : StaticInstance<AudioSystem>
+{
+    [SerializeField]
+    private AudioSource _musicSource;
 
-    public void PlayMusic(AudioClip clip) {
-        _musicSource.clip = clip;
-        _musicSource.Play();
+    [SerializeField]
+    private AudioSource _soundsSource;
+
+    [SerializeField]
+    private List<Sound> _musicSounds,
+        _sfxSounds;
+
+    public void PlayMusic(string name)
+    {
+        Sound s = _musicSounds.Find(s => s.name == name);
+        if (s == null)
+        {
+            Debug.Log("Sound not found: " + name);
+        }
+        else
+        {
+            _musicSource.clip = s.clip;
+            _musicSource.Play();
+        }
     }
 
-    public void PlaySound(AudioClip clip, Vector3 pos, float vol = 1) {
-        _soundsSource.transform.position = pos;
-        PlaySound(clip, vol);
+    public void PlaySFX(string name)
+    {
+        Sound s = _sfxSounds.Find(s => s.name == name);
+        if (s == null)
+        {
+            Debug.Log("Sound not found: " + name);
+        }
+        else
+        {
+            _soundsSource.PlayOneShot(s.clip);
+        }
     }
 
-    public void PlaySound(AudioClip clip, float vol = 1) {
-        _soundsSource.PlayOneShot(clip, vol);
+    public void SetMuteSFX(bool isOn)
+    {
+        _soundsSource.mute = !isOn;
     }
+}
+
+[Serializable]
+public class Sound
+{
+    public string name;
+    public AudioClip clip;
 }

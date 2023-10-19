@@ -60,6 +60,7 @@ public class TileInfo
                 HandleStack();
                 break;
             case TileState.Match:
+                HandleMatch();
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(newState), newState, null);
@@ -82,6 +83,7 @@ public class TileInfo
                 collider.enabled = true;
             }
         );
+        _rigidbody.useGravity = true;
         _rigidbody.isKinematic = false;
         ChangeState(TileState.Ground);
     }
@@ -94,9 +96,16 @@ public class TileInfo
                 collider.enabled = false;
             }
         );
+        _rigidbody.useGravity = false;
         _rigidbody.isKinematic = true;
         _outline.enabled = false;
         LevelManager.Instance.AddTile(this);
+    }
+
+    private void HandleMatch()
+    {
+        gameObject.SetActive(false);
+        transform.position = Vector3.zero;
     }
 
     void Update()

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
+using DG.Tweening;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.AI;
@@ -29,9 +30,6 @@ public class LevelManager : StaticInstance<LevelManager>
     [SerializeField]
     private TilesStackController _tileStackController;
 
-    [SerializeField]
-    private PopupController _popupController;
-
     void Start()
     {
         _poolTiles = new ObjectPool<TileInfo>(
@@ -41,10 +39,9 @@ public class LevelManager : StaticInstance<LevelManager>
                     .GetComponent<TileInfo>();
             },
             null,
-            tileInfo =>
+            tile =>
             {
-                tileInfo.gameObject.SetActive(false);
-                tileInfo.transform.position = Vector3.zero;
+                Debug.Log("Release");
             },
             tileInfo =>
             {
@@ -93,15 +90,15 @@ public class LevelManager : StaticInstance<LevelManager>
     {
         ViewManager.Instance.Show<IngameScreen>();
 
-        _tileStackController.gameObject.SetActive(true);
-
-        StartCoroutine(SpawnTiles());
+        SpawnTiles();
     }
 
-    private IEnumerator<WaitForSeconds> SpawnTiles()
+    private void SpawnTiles()
     {
         ScriptableLevel scriptableLevel = ResourceSystem.Instance.GetCurrentLevel();
         List<FlowerAmount> flowerAmountList = scriptableLevel.flowerAmountList;
+
+        var sequence = DOTween.Sequence();
 
         for (int i = 0; i < flowerAmountList.Count; i++)
         {
@@ -112,28 +109,35 @@ public class LevelManager : StaticInstance<LevelManager>
             {
                 for (int k = 0; k < 3; k++)
                 {
-                    yield return new WaitForSeconds(0.01f);
-
-                    TileInfo tileInfo = _poolTiles.Get();
-                    tileInfo.transform.parent = _tilesParent.transform;
-                    tileInfo.transform.localPosition = new Vector3(
-                        Random.Range(-5f, 5f),
-                        Random.Range(0f, 8f),
-                        Random.Range(-5f, 5f)
-                    );
-                    tileInfo.ChangeState(TileState.Spawn);
-                    tileInfo.transform.eulerAngles = new Vector3(0, Random.Range(0, 180), 0);
-                    tileInfo.UpdateScriptableFlower(scriptableFlower);
-                    _listTileInfos.Add(tileInfo);
+                    sequence.AppendInterval(0.01f);
+                    sequence.AppendCallback(() =>
+                    {
+                        TileInfo tileInfo = _poolTiles.Get();
+                        tileInfo.transform.parent = _tilesParent.transform;
+                        tileInfo.transform.localPosition = new Vector3(
+                            Random.Range(-5f, 5f),
+                            Random.Range(0f, 8f),
+                            Random.Range(-5f, 5f)
+                        );
+                        tileInfo.ChangeState(TileState.Spawn);
+                        tileInfo.gameObject.SetActive(true);
+                        tileInfo.transform.eulerAngles = new Vector3(0, Random.Range(0, 180), 0);
+                        tileInfo.UpdateScriptableFlower(scriptableFlower);
+                        _listTileInfos.Add(tileInfo);
+                    });
                 }
             }
         }
-        ChangeState(LevelState.DropTiles);
+        sequence.AppendCallback(() =>
+        {
+            ChangeState(LevelState.DropTiles);
+        });
     }
 
     private void HandleDropTiles()
     {
         _tilesParent.SetActive(true);
+        _tileStackController.gameObject.SetActive(true);
 
         _listTileInfos.ForEach(
             (tileInfo) =>
@@ -153,6 +157,8 @@ public class LevelManager : StaticInstance<LevelManager>
         _ingameScreen.AddStar(matchTileInfos[1].transform.position);
 
         yield return new WaitForSeconds(0.5f);
+
+        var sequence = DOTween.Sequence();
         matchTileInfos.ForEach(
             (tileInfo) =>
             {
@@ -169,18 +175,18 @@ public class LevelManager : StaticInstance<LevelManager>
 
     private void HandleWin()
     {
-        _popupController.gameObject.SetActive(true);
+        AudioSystem.Instance.PlaySFX("Win");
         ScriptablePlayerProgress playerProgress = ResourceSystem.Instance.PlayerProgress;
         playerProgress.TotalStar += _ingameScreen.StarAmount;
         playerProgress.currentLevel++;
-        _popupController.UpdateResult(_ingameScreen.StarAmount);
+        PopupController.Instance.UpdateResult(_ingameScreen.StarAmount);
         StopAllCoroutines();
     }
 
     private void HandleLose()
     {
-        _popupController.gameObject.SetActive(true);
-        _popupController.UpdateResult(-1);
+        AudioSystem.Instance.PlaySFX("Lose");
+        PopupController.Instance.UpdateResult(-1);
         StopAllCoroutines();
     }
 
@@ -193,8 +199,7 @@ public class LevelManager : StaticInstance<LevelManager>
 
     private void HandleRestart()
     {
-        Reset();
-        _tilesParent.SetActive(false);
+        ChangeState(LevelState.Hide);
         ChangeState(LevelState.SpawnTiles);
     }
 

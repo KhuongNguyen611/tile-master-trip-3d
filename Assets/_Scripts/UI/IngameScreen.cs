@@ -4,6 +4,7 @@ using DG.Tweening;
 using TMPro;
 using UnityEngine;
 using UnityEngine.Pool;
+using UnityEngine.UI;
 
 public class IngameScreen : View
 {
@@ -46,6 +47,9 @@ public class IngameScreen : View
     [SerializeField]
     private RectTransform _comboProgressBar;
 
+    [SerializeField]
+    private Button _pauseButton;
+
     public override void Init()
     {
         _starPool = new ObjectPool<RectTransform>(
@@ -71,6 +75,12 @@ public class IngameScreen : View
             10
         );
         ResetUI();
+        _pauseButton.onClick.AddListener(() =>
+        {
+            AudioSystem.Instance.PlaySFX("ClickButton");
+            PopupController.Instance.ChangeState(PopupState.Pause);
+        });
+        gameObject.SetActive(false);
     }
 
     public void AddStar(Vector3 objectPosition)
@@ -101,6 +111,8 @@ public class IngameScreen : View
 
     private void SpawnStar(Vector2 screenPosition)
     {
+        AudioSystem.Instance.PlaySFX("CollectStar");
+
         RectTransform starRect = _starPool.Get().GetComponent<RectTransform>();
         starRect.anchoredPosition = screenPosition;
 

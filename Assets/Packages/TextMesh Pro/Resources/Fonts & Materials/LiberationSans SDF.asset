@@ -29,7 +29,7 @@ Material:
     - _FaceDilate: 0
     - _OutlineWidth: 0.1
     - _ScaleRatioB: 1
-    - _ScaleRatioC: 0.73125
+    - _ScaleRatioC: 0.6964286
     - _UnderlayOffsetX: 0.5
     - _UnderlayOffsetY: -1
     m_Colors:

@@ -3,6 +3,14 @@ using System.Collections.Generic;
 using Unity.VisualScripting;
 using UnityEngine;
 
+[CreateAssetMenu(fileName = "ScriptableFlower", menuName = "Scriptable Object/Flower")]
+public class ScriptableFlower : ScriptableObject
+{
+    public FlowerID flowerID;
+
+    public Sprite sprite;
+}
+
 public enum FlowerID
 {
     Flower_0,
@@ -21,12 +29,4 @@ public enum FlowerID
     Flower_13,
     Flower_14,
     Flower_15,
-}
-
-[CreateAssetMenu(fileName = "ScriptableFlower", menuName = "Scriptable Object/Flower")]
-public class ScriptableFlower : ScriptableObject
-{
-    public FlowerID flowerID;
-
-    public Sprite sprite;
 }

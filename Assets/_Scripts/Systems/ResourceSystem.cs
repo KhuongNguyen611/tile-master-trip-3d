@@ -12,6 +12,7 @@ public class ResourceSystem : StaticInstance<ResourceSystem>
 {
     public List<ScriptableLevel> Levels { get; private set; }
 
+    [HideInInspector]
     public ScriptablePlayerProgress PlayerProgress;
 
     protected override void Awake()
